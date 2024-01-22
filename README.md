@@ -10,7 +10,7 @@ While I couldn't find a direct solution, I did come across some articles talking
 
 # Server action
 
-For the server action, we instantiate a new `Promise` resolving to a `StreamingMessage`. `StreamingMessage` is pretty much an arbitrary object here having (`id`, `content`, and `next` properties) - you can add whatever properties you like on the object. The only critical property is `next`, which stores a reference to an additional or "next" `Promise`. On resolving the returned `Promise`, a new `Promise` is created and referenced the `next` property of the "next" `Promise` - essentially adding a new link to the promise chain. As these promises resolve, the data is streamed to the client.
+For the server action, we instantiate a new `Promise` resolving to a `StreamingMessage`. `StreamingMessage` is pretty much an arbitrary object here (having `id`, `content`, and `next` properties) - you can add whatever properties you like on the object. The only critical property is `next`, which stores a reference to an additional or "next" `Promise`. On resolving the returned `Promise`, a new `Promise` is created and referenced the `next` property of the "next" `Promise` - essentially adding a new link to the promise chain. As these promises resolve, the data is streamed to the client.
 
 Here is the basic idea:
 
