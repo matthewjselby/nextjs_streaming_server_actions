@@ -15,31 +15,31 @@ For the server action, we instantiate a new `Promise` resolving to a `StreamingM
 Here is the basic idea:
 
 ```javascript
-    let resolveFunc: (message: StreamingMessage) => void = () => {}
-    let next = new Promise<StreamingMessage>(resolve => {
+let resolveFunc: (message: StreamingMessage) => void = () => {}
+let next = new Promise<StreamingMessage>(resolve => {
+    resolveFunc = resolve
+})
+let messageNum = 1
+
+let queueNext = () => {
+    const resolvePrevious = resolveFunc
+    const nextRow = new Promise<StreamingMessage>(resolve => {
         resolveFunc = resolve
     })
-    let messageNum = 1
+    resolvePrevious({
+        id: messageNum,
+        content: `Hello from server action interval stream - message number ${messageNum}`,
+        next: nextRow
+    })
+    messageNum += 1
+}
 
-    let queueNext = () => {
-        const resolvePrevious = resolveFunc
-        const nextRow = new Promise<StreamingMessage>(resolve => {
-            resolveFunc = resolve
-        })
-        resolvePrevious({
-            id: messageNum,
-            content: `Hello from server action interval stream - message number ${messageNum}`,
-            next: nextRow
-        })
-        messageNum += 1
-    }
+// async function that calls queueNext here, (e.g.,):
+setInterval(queueNext, 5000)
 
-    // async function that calls queueNext here, (e.g.,):
-    setInterval(queueNext, 5000)
+queueNext()
 
-    queueNext()
-
-    return next
+return next
 ```
 
 I've included two examples in the source. The first (`serverActionStreamFromInterval` in `/app/server-action-stream/action.ts`) uses a simple interval to send an update to the client. The second (`serverActionStreamFromSSEStream` in `/app/server-action-stream/action.ts`) connects to a server-sent event stream (specifically, an example one defined in `/app/route-stream/route.ts`) and forwards those events to the client. Note that in the second example the `content` property of the `StreamingMessage` is JSON instead of plaintext - and is parsed in the server action.
@@ -51,24 +51,24 @@ I defined a [custom hook](https://react.dev/learn/reusing-logic-with-custom-hook
 You can adapt the code in the custom hook as needed for your use case:
 
 ```javascript
-    useEffect(() => {
-        const processMessage = async (promise: Promise<StreamingMessage>) => {
-            const message = await promise
-            onMessage(message)
-            if (message.next) {
-                await processMessage(message.next)
-            }
+useEffect(() => {
+    const processMessage = async (promise: Promise<StreamingMessage>) => {
+        const message = await promise
+        onMessage(message)
+        if (message.next) {
+            await processMessage(message.next)
         }
+    }
 
-        const setUpSeverActionStream = async () => {
-            const promise = serverAction() as Promise<StreamingMessage>
-            await processMessage(promise)
-        }
-        setUpSeverActionStream()
-    }, [serverAction])
+    const setUpSeverActionStream = async () => {
+        const promise = serverAction() as Promise<StreamingMessage>
+        await processMessage(promise)
+    }
+    setUpSeverActionStream()
+}, [serverAction])
 ```
 
-Essentially we're just waiting for a `Promise` returned from the server action to resolve, calling the `onMessage` callback with desired parameters when it does, and then teeing up the next `Promise` and waiting for it to resolve (if there is one, which, in the case of the examples, there always is).
+Essentially we're just waiting for a `Promise` returned from the server action to resolve, calling the `onMessage` callback with desired parameters when it does, then teeing up the next `Promise` and waiting for it to resolve (if there is one, which, in the case of the examples, there always is).
 
 # Conclusion
 
