@@ -83,4 +83,4 @@ Essentially we're just waiting for a `Promise` returned from the server action t
 
 # Conclusion
 
-So there you have it, streaming text and/or data from a server action in Next.js. This is a rough proof of concept. There's no error handling, encapsulation, or anything else sensible here. Perhaps more to come in the future.
+So there you have it, streaming text and/or data from a server action in Next.js. This is a rough proof of concept. There's no error handling and little organization. Perhaps more to come in the future.
