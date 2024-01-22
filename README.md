@@ -46,7 +46,18 @@ I've included two examples in the source. The first (`serverActionStreamFromInte
 
 # Client side (custom hook)
 
-I defined a [custom hook](https://react.dev/learn/reusing-logic-with-custom-hooks) to consume the stream from the server action. The hook takes two arguments: `serverAction` - a reference to the streaming server action, and `onMessage` - a function that is called on every message from the server action.
+I defined a [custom hook](https://react.dev/learn/reusing-logic-with-custom-hooks) to consume the stream from the server action (see `useStreamingServerAction` in `/app/utils/hooks.ts`). The hook takes two arguments: `serverAction` - a reference to the streaming server action, and `onMessage` - a function that is called on every message from the server action.
+
+Usage:
+
+```javascript
+useStreamingServerAction({
+    serverAction: serverAction,
+    onMessage: (message: StreamingMessage) => {
+        console.log(message)
+    }
+})
+```
 
 You can adapt the code in the custom hook as needed for your use case:
 
